@@ -145,13 +145,14 @@ export function useSpeedTest() {
         const historyItem = {
           id: crypto.randomUUID ? crypto.randomUUID() : `item_${Date.now()}`,
           timestamp: Date.now(),
+          ip: finalResults.clientIp || serverInfo.ip || '---',
           download_speed: finalResults.downloadSpeed,
           upload_speed: finalResults.uploadSpeed,
           ping: finalResults.ping,
           jitter: finalResults.jitter,
           server_colo: finalResults.serverColo,
           server_location: finalResults.serverLocation,
-          client_isp: finalResults.clientIsp,
+          client_isp: finalResults.clientIsp || serverInfo.isp,
           client_city: finalResults.clientCity,
           client_country: finalResults.clientCountry,
         };

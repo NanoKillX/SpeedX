@@ -83,6 +83,15 @@ export default {
     const path = url.pathname;
     const clientIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-real-ip') || '127.0.0.1';
 
+    // If request is not for /api/*, serve frontend from Cloudflare Pages
+    if (!path.startsWith('/api')) {
+      const pagesUrl = new URL(request.url);
+      pagesUrl.hostname = 'speedx-8fd.pages.dev';
+      pagesUrl.protocol = 'https:';
+      pagesUrl.port = '';
+      return fetch(new Request(pagesUrl, request));
+    }
+
     // Rate limiting check (except for ping health checks)
     if (!checkRateLimit(clientIp)) {
       return jsonResponse({ error: 'Too Many Requests', message: 'Rate limit exceeded. Please wait a minute before retesting.' }, 429);

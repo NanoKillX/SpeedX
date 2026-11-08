@@ -308,11 +308,25 @@ body {
 
 /* SPEEDOMETER COMPONENT */
 .speedometer-wrapper {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   margin-bottom: 36px;
+}
+
+.speedometer-glow-backdrop {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -60%);
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 90, 0, 0.14) 0%, rgba(255, 90, 0, 0) 70%);
+  pointer-events: none;
+  filter: blur(24px);
 }
 
 .speedometer-container {
@@ -726,6 +740,112 @@ body {
 .upload-box .num { color: var(--accent-cyan); }
 .ping-box .num { color: var(--accent-yellow); }
 .jitter-box .num { color: var(--accent-purple); }
+
+.stat-box .sub-stat {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 4px;
+}
+
+/* IP & NETWORK IDENTITY IN REPORT */
+.report-ip-section {
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--border-glass);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+
+.ip-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.ip-sec-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.mini-ip-copy-btn, .mini-ip-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-glass);
+  color: var(--text-main);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mini-ip-copy-btn:hover, .mini-ip-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 90, 0, 0.4);
+}
+
+.report-ip-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.ip-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ip-item-lbl {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.ip-item-val {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.ip-highlight {
+  font-family: var(--font-mono);
+  color: var(--accent-cyan);
+}
+
+.badge-pop {
+  font-family: var(--font-mono);
+  color: var(--primary-orange);
+}
+
+.trophy-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 90, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.primary-share-btn {
+  background: linear-gradient(135deg, rgba(255, 90, 0, 0.2), rgba(255, 140, 56, 0.25));
+  border-color: rgba(255, 90, 0, 0.4);
+}
+
+.primary-share-btn:hover {
+  background: linear-gradient(135deg, rgba(255, 90, 0, 0.35), rgba(255, 140, 56, 0.4));
+  border-color: var(--primary-orange);
+}
 
 /* QUALITY BREAKDOWN */
 .quality-breakdown {
@@ -1165,13 +1285,97 @@ body {
   border-color: rgba(255, 255, 255, 0.15);
 }
 
+.history-item-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 170px;
+}
+
 .history-item-time {
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 0.82rem;
   color: var(--text-secondary);
-  min-width: 160px;
+}
+
+.history-ip-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 210, 255, 0.08);
+  border: 1px solid rgba(0, 210, 255, 0.2);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  color: var(--accent-cyan);
+  cursor: pointer;
+  transition: all 0.2s;
+  width: fit-content;
+}
+
+.history-ip-tag:hover {
+  background: rgba(0, 210, 255, 0.16);
+  border-color: rgba(0, 210, 255, 0.4);
+}
+
+.ip-mono-text {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.ip-copy-icon {
+  opacity: 0.6;
+}
+
+.history-ip-tag:hover .ip-copy-icon {
+  opacity: 1;
+}
+
+.history-item-server {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.server-loc-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.server-isp-text {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.conn-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.ip-tag {
+  background: rgba(0, 210, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--accent-cyan) !important;
+}
+
+.verified-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: var(--accent-green);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
 }
 
 .history-item-metrics {

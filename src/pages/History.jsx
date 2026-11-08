@@ -1,8 +1,10 @@
-import React from 'react';
-import { History as HistoryIcon, Trash2, Download, ArrowDownCircle, ArrowUpCircle, Activity, Radio, Calendar } from 'lucide-react';
+import React, { useState } from 'react';
+import { History as HistoryIcon, Trash2, Download, ArrowDownCircle, ArrowUpCircle, Activity, Radio, Calendar, Globe, Copy, Check } from 'lucide-react';
 import { formatSpeed, formatPing, formatDate } from '../utils/formatters';
 
 export default function HistoryPage({ history = [], onClear, onRunNewTest }) {
+  const [copiedId, setCopiedId] = useState(null);
+
   // Aggregate averages
   const totalTests = history.length;
   const avgDownload = totalTests > 0
@@ -17,26 +19,52 @@ export default function HistoryPage({ history = [], onClear, onRunNewTest }) {
 
   const exportCSV = () => {
     if (history.length === 0) return;
-    const headers = ['Timestamp', 'Date', 'Download (Mbps)', 'Upload (Mbps)', 'Ping (ms)', 'Jitter (ms)', 'Server Colo', 'Server Location', 'ISP'];
+    const headers = [
+      'Timestamp',
+      'Date & Time (UTC)',
+      'Client IP',
+      'Client ISP',
+      'Client City',
+      'Client Country',
+      'Download (Mbps)',
+      'Upload (Mbps)',
+      'Ping (ms)',
+      'Jitter (ms)',
+      'Server PoP',
+      'Server Location'
+    ];
+
     const rows = history.map((h) => [
       h.timestamp,
       new Date(h.timestamp).toISOString(),
+      `"${h.ip || 'Unknown'}"`,
+      `"${h.client_isp || 'Unknown ISP'}"`,
+      `"${h.client_city || ''}"`,
+      `"${h.client_country || ''}"`,
       h.download_speed,
       h.upload_speed,
       h.ping,
       h.jitter,
-      h.server_colo || '',
-      `"${h.server_location || ''}"`,
-      `"${h.client_isp || ''}"`,
+      `"${h.server_colo || 'EDGE'}"`,
+      `"${h.server_location || 'Cloudflare Anycast'}"`,
     ]);
+
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `speedx_history_${Date.now()}.csv`);
+    link.setAttribute('download', `speedx_report_with_ip_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const copyItemIp = (id, ip) => {
+    if (!ip) return;
+    navigator.clipboard.writeText(ip).then(() => {
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    });
   };
 
   return (
@@ -44,16 +72,16 @@ export default function HistoryPage({ history = [], onClear, onRunNewTest }) {
       <div className="history-header">
         <div>
           <h1 className="page-title">
-            TEST <span className="hero-highlight">HISTORY</span>
+            BENCHMARK <span className="hero-highlight">REPORTS & HISTORY</span>
           </h1>
-          <p className="page-subtitle">Historical internet performance benchmarks from this device and network</p>
+          <p className="page-subtitle">Complete historical log of tests including public IP, latency, and throughput</p>
         </div>
         <div className="history-actions">
           {history.length > 0 && (
             <>
               <button className="secondary-btn" onClick={exportCSV}>
                 <Download size={16} />
-                <span>Export CSV</span>
+                <span>Export CSV with IPs</span>
               </button>
               <button className="danger-btn" onClick={onClear}>
                 <Trash2 size={16} />
@@ -89,47 +117,69 @@ export default function HistoryPage({ history = [], onClear, onRunNewTest }) {
         <div className="empty-history-card">
           <HistoryIcon size={48} className="empty-icon" />
           <h3 className="empty-title">No Speed Tests Recorded Yet</h3>
-          <p className="empty-desc">Run your first network diagnostic to view latency, bandwidth trends, and PoP telemetry.</p>
+          <p className="empty-desc">Run a speed test to record network throughput, latency, and IP telemetry.</p>
           <button className="start-btn-inline" onClick={onRunNewTest}>
-            Run Speed Test
+            Run Speed Test Now
           </button>
         </div>
       ) : (
         <div className="history-list">
-          {history.map((item, idx) => (
-            <div key={item.id || idx} className="history-item-card">
-              <div className="history-item-time">
-                <Calendar size={14} className="cal-icon" />
-                <span>{formatDate(item.timestamp)}</span>
+          {history.map((item, idx) => {
+            const itemKey = item.id || `hist_${item.timestamp}_${idx}`;
+            const isCopied = copiedId === itemKey;
+
+            return (
+              <div key={itemKey} className="history-item-card">
+                {/* Left: Time and IP */}
+                <div className="history-item-left">
+                  <div className="history-item-time">
+                    <Calendar size={14} className="cal-icon" />
+                    <span>{formatDate(item.timestamp)}</span>
+                  </div>
+                  {item.ip && (
+                    <div className="history-ip-tag" onClick={() => copyItemIp(itemKey, item.ip)} title="Click to copy IP">
+                      <Globe size={12} className="text-cyan" />
+                      <span className="ip-mono-text">{item.ip}</span>
+                      {isCopied ? <Check size={11} className="text-green" /> : <Copy size={11} className="ip-copy-icon" />}
+                    </div>
+                  )}
+                </div>
+
+                {/* Center: Metrics */}
+                <div className="history-item-metrics">
+                  <div className="hist-metric">
+                    <ArrowDownCircle size={16} className="text-orange" />
+                    <span className="hist-m-label">Down:</span>
+                    <span className="hist-m-val">{formatSpeed(item.download_speed)} Mbps</span>
+                  </div>
+                  <div className="hist-metric">
+                    <ArrowUpCircle size={16} className="text-cyan" />
+                    <span className="hist-m-label">Up:</span>
+                    <span className="hist-m-val">{formatSpeed(item.upload_speed)} Mbps</span>
+                  </div>
+                  <div className="hist-metric">
+                    <Activity size={16} className="text-yellow" />
+                    <span className="hist-m-label">Ping:</span>
+                    <span className="hist-m-val">{formatPing(item.ping)} ms</span>
+                  </div>
+                  <div className="hist-metric">
+                    <Radio size={16} className="text-purple" />
+                    <span className="hist-m-label">Jitter:</span>
+                    <span className="hist-m-val">{formatPing(item.jitter)} ms</span>
+                  </div>
+                </div>
+
+                {/* Right: Server and ISP */}
+                <div className="history-item-server">
+                  <span className="server-tag">{item.server_colo || 'CF-EDGE'}</span>
+                  <div className="server-loc-col">
+                    <span className="server-loc-text">{item.server_location || 'Cloudflare Anycast'}</span>
+                    {item.client_isp && <span className="server-isp-text">{item.client_isp}</span>}
+                  </div>
+                </div>
               </div>
-              <div className="history-item-metrics">
-                <div className="hist-metric">
-                  <ArrowDownCircle size={16} className="text-orange" />
-                  <span className="hist-m-label">Down:</span>
-                  <span className="hist-m-val">{formatSpeed(item.download_speed)} Mbps</span>
-                </div>
-                <div className="hist-metric">
-                  <ArrowUpCircle size={16} className="text-cyan" />
-                  <span className="hist-m-label">Up:</span>
-                  <span className="hist-m-val">{formatSpeed(item.upload_speed)} Mbps</span>
-                </div>
-                <div className="hist-metric">
-                  <Activity size={16} className="text-yellow" />
-                  <span className="hist-m-label">Ping:</span>
-                  <span className="hist-m-val">{formatPing(item.ping)} ms</span>
-                </div>
-                <div className="hist-metric">
-                  <Radio size={16} className="text-purple" />
-                  <span className="hist-m-label">Jitter:</span>
-                  <span className="hist-m-val">{formatPing(item.jitter)} ms</span>
-                </div>
-              </div>
-              <div className="history-item-server">
-                <span className="server-tag">{item.server_colo || 'CF-EDGE'}</span>
-                <span className="server-loc-text">{item.server_location || 'Cloudflare Anycast'}</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
