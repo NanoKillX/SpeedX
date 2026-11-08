@@ -1,0 +1,15 @@
+name = "speedx-api"
+main = "src/index.js"
+compatibility_date = "2024-04-01"
+
+[vars]
+ENVIRONMENT = "production"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "speedx-db"
+database_id = "39fa3539-e4c7-4c74-a6ff-90df25cc1613"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "speedx-bucket"
