@@ -3,7 +3,7 @@
  * Interacts with Cloudflare Workers speed-testing endpoints
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://speedx-api.stharunindu.workers.dev';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://api-speedx.nhubx.com';
 
 export async function fetchHealth() {
   const res = await fetch(`${API_BASE_URL}/api/health`, {
