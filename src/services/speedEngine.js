@@ -7,11 +7,25 @@ import { fetchPingProbe, getDownloadUrl, uploadChunk, saveTestResult } from './a
 import { calculateJitter } from '../utils/formatters';
 
 // Generate reusable high-entropy incompressible byte buffer for upload tests
+// Web Cryptography API specifies a maximum of 65,536 bytes (64 KB) per getRandomValues call.
 let uploadPayloadBuffer = null;
+
 function getUploadPayload(sizeInBytes = 1048576) {
   if (!uploadPayloadBuffer || uploadPayloadBuffer.byteLength !== sizeInBytes) {
-    uploadPayloadBuffer = new Uint8Array(sizeInBytes);
-    crypto.getRandomValues(uploadPayloadBuffer);
+    const buffer = new Uint8Array(sizeInBytes);
+    const MAX_CHUNK = 65536; // 64 KB hard limit for crypto.getRandomValues
+
+    // Fill buffer in safe 64KB chunks to prevent QuotaExceededError in all browsers
+    for (let offset = 0; offset < sizeInBytes; offset += MAX_CHUNK) {
+      const chunkSize = Math.min(MAX_CHUNK, sizeInBytes - offset);
+      const sub = new Uint8Array(buffer.buffer, offset, chunkSize);
+      crypto.getRandomValues(sub);
+      // XOR with offset to prevent any compression dictionary repetition
+      sub[0] = (sub[0] ^ (offset & 0xff)) & 0xff;
+      sub[1] = (sub[1] ^ ((offset >> 8) & 0xff)) & 0xff;
+    }
+
+    uploadPayloadBuffer = buffer;
   }
   return uploadPayloadBuffer;
 }
@@ -148,7 +162,7 @@ export class SpeedTestRunner {
     for (let i = 0; i < SAMPLES; i++) {
       if (this.isAborted) break;
       try {
-        const probe = await fetchPingProbe();
+        const probe = await fetchPingProbe(this.abortController.signal);
         latencies.push(probe.duration);
         if (!serverMeta && probe.colo) {
           serverMeta = probe;
@@ -166,9 +180,9 @@ export class SpeedTestRunner {
           currentSpeed: 0,
         });
 
-        // Interval between pings
         await this.sleep(60);
       } catch (e) {
+        if (this.isAborted) break;
         console.warn('Ping sample failed:', e);
       }
     }
@@ -177,7 +191,6 @@ export class SpeedTestRunner {
       throw new Error('All latency probes failed. Check connection.');
     }
 
-    // Sort to remove upper outliers (first 10% extreme spikes)
     latencies.sort((a, b) => a - b);
     const validLatencies = latencies.length > 3 ? latencies.slice(0, latencies.length - 1) : latencies;
     const minPing = validLatencies[0];
@@ -204,7 +217,6 @@ export class SpeedTestRunner {
     let peakSpeed = 0;
     let smoothedSpeed = 0;
 
-    // Sliding window for instantaneous speed measurement (last 400ms)
     const windowSamples = [];
     const WINDOW_DURATION = 400;
 
@@ -230,24 +242,20 @@ export class SpeedTestRunner {
 
             windowSamples.push({ time: now, bytes: chunkBytes });
 
-            // Prune old samples from window
             while (windowSamples.length > 0 && now - windowSamples[0].time > WINDOW_DURATION) {
               windowSamples.shift();
             }
 
-            // Calculate instantaneous speed in Mbps
             const windowBytes = windowSamples.reduce((acc, s) => acc + s.bytes, 0);
             const windowTimeSpan = Math.max(50, now - (windowSamples[0]?.time || now));
             const instantMbps = (windowBytes * 8) / (windowTimeSpan / 1000) / 1000000;
 
-            // Exponential moving average for fluid needle motion
             smoothedSpeed = smoothedSpeed === 0 ? instantMbps : smoothedSpeed * 0.75 + instantMbps * 0.25;
             if (smoothedSpeed > peakSpeed) peakSpeed = smoothedSpeed;
 
             const elapsed = now - startTime;
             const progress = Math.min(100, (elapsed / TEST_DURATION_MS) * 100);
 
-            // Record graph point periodically (every ~200ms)
             const secondMark = (elapsed / 1000).toFixed(1);
             if (!sharedGraphData.length || sharedGraphData[sharedGraphData.length - 1].time !== secondMark) {
               sharedGraphData.push({
@@ -274,12 +282,10 @@ export class SpeedTestRunner {
       }
     };
 
-    // Run parallel workers to saturate link
     const workers = Array.from({ length: CONCURRENCY }, (_, i) => runWorker(i));
     await Promise.all(workers);
 
     const totalDurationSeconds = Math.max(1, (performance.now() - startTime) / 1000);
-    // Overall average download speed
     const avgSpeed = (totalBytesTransferred * 8) / totalDurationSeconds / 1000000;
 
     return {
@@ -292,8 +298,11 @@ export class SpeedTestRunner {
   async measureUpload(sharedGraphData) {
     const TEST_DURATION_MS = 7500;
     const CONCURRENCY = 3;
-    const CHUNK_SIZE = 1048576; // 1 MB random payload per request
+    const CHUNK_SIZE = 1048576; // 1 MB payload
+
+    // Generate safe incompressible 1MB buffer (never throws QuotaExceededError)
     const payload = getUploadPayload(CHUNK_SIZE);
+    const uploadBlob = new Blob([payload], { type: 'application/octet-stream' });
 
     const startTime = performance.now();
     let totalBytesUploaded = 0;
@@ -306,18 +315,16 @@ export class SpeedTestRunner {
     const runWorker = async () => {
       while (!this.isAborted && performance.now() - startTime < TEST_DURATION_MS) {
         try {
-          const blob = new Blob([payload], { type: 'application/octet-stream' });
           const postStart = performance.now();
 
-          await uploadChunk(blob);
+          // Upload pre-built binary blob
+          await uploadChunk(uploadBlob, this.abortController.signal);
 
           const now = performance.now();
-          const uploadTime = Math.max(10, now - postStart);
           totalBytesUploaded += CHUNK_SIZE;
 
           windowSamples.push({ time: now, bytes: CHUNK_SIZE });
 
-          // Prune window
           while (windowSamples.length > 0 && now - windowSamples[0].time > WINDOW_DURATION) {
             windowSamples.shift();
           }
@@ -354,8 +361,8 @@ export class SpeedTestRunner {
           });
         } catch (err) {
           if (this.isAborted) break;
-          console.warn('Upload worker error:', err);
-          await this.sleep(100);
+          console.warn('Upload worker chunk error:', err);
+          await this.sleep(120);
         }
       }
     };
