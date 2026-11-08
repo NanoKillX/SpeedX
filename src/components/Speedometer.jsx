@@ -41,7 +41,7 @@ export default function Speedometer({
   const isRunning = status === 'ping' || status === 'download' || status === 'upload';
   const targetAngle = useMemo(() => speedToAngle(speed), [speed]);
 
-  // Smooth lerp for needle and number readout (60/120fps silky animation)
+  // Smooth lerp for needle and number readout
   const [smoothAngle, setSmoothAngle] = useState(-120);
   const [smoothSpeed, setSmoothSpeed] = useState(0);
 
@@ -72,11 +72,26 @@ export default function Speedometer({
     return () => cancelAnimationFrame(animId);
   }, []);
 
-  // Reset smooth motion when test is restarted
   useEffect(() => {
     if (status === 'idle') {
       setSmoothAngle(-120);
       setSmoothSpeed(0);
+    }
+  }, [status]);
+
+  // Dynamic phase color
+  const phaseColor = useMemo(() => {
+    switch (status) {
+      case 'ping':
+        return '#00ff88'; // Emerald Green
+      case 'download':
+        return '#00f0ff'; // Electric Cyan
+      case 'upload':
+        return '#b026ff'; // Vibrant Violet
+      case 'completed':
+        return '#ffffff'; // Pure White
+      default:
+        return '#ffffff';
     }
   }, [status]);
 
@@ -102,66 +117,61 @@ export default function Speedometer({
   const getStatusText = () => {
     switch (status) {
       case 'ping':
-        return 'MEASURING LATENCY';
+        return 'MEASURING PING & JITTER';
       case 'download':
-        return 'TESTING DOWNLOAD';
+        return 'TESTING DOWNLOAD STREAM';
       case 'upload':
-        return 'TESTING UPLOAD';
+        return 'TESTING UPLOAD STREAM';
       case 'completed':
-        return 'BENCHMARK READY';
+        return 'BENCHMARK COMPLETED';
       case 'error':
-        return 'CONNECTION ISSUE';
+        return 'TEST ERROR';
       case 'aborted':
         return 'STOPPED';
       default:
-        return 'READY';
+        return 'READY TO BENCHMARK';
     }
   };
 
   return (
     <div className="speedometer-wrapper">
-      <div className="speedometer-glow-backdrop"></div>
+      <div
+        className="speedometer-glow-backdrop"
+        style={{
+          background: `radial-gradient(circle, ${phaseColor}18 0%, transparent 70%)`,
+        }}
+      ></div>
+
       <div className="speedometer-container">
         <svg className="speedometer-svg" viewBox="0 0 340 310">
           <defs>
-            <linearGradient id="speedo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#ffb347" />
-              <stop offset="50%" stopColor="#ff5a00" />
-              <stop offset="100%" stopColor="#ff1a00" />
-            </linearGradient>
-
-            <filter id="speedo-glow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="5" result="blur" />
+            <filter id="gauge-glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="4" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
-
-            <radialGradient id="hub-grad" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#222b3d" />
-              <stop offset="100%" stopColor="#0d111a" />
-            </radialGradient>
           </defs>
 
           {/* Background Track Arc */}
           <path
             d={bgArc}
             fill="none"
-            stroke="#161d2d"
-            strokeWidth="10"
+            stroke="#18181b"
+            strokeWidth="9"
             strokeLinecap="round"
           />
 
-          {/* Active Glowing Arc with smooth trailing */}
+          {/* Dynamic Active Glowing Arc */}
           {activeArc && (
             <path
               d={activeArc}
               fill="none"
-              stroke="url(#speedo-gradient)"
-              strokeWidth="10"
+              stroke={phaseColor}
+              strokeWidth="9"
               strokeLinecap="round"
-              filter="url(#speedo-glow)"
+              filter="url(#gauge-glow)"
               className="active-arc"
             />
           )}
@@ -187,8 +197,8 @@ export default function Speedometer({
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke={isActive ? '#ff5a00' : '#26334a'}
-                  strokeWidth={index === 0 || index === TICKS.length - 1 ? 2.5 : 1.5}
+                  stroke={isActive ? phaseColor : '#27272a'}
+                  strokeWidth={index === 0 || index === TICKS.length - 1 ? 2 : 1.2}
                 />
                 <text
                   x={tx}
@@ -196,7 +206,7 @@ export default function Speedometer({
                   textAnchor="middle"
                   fontSize="10"
                   fontWeight="600"
-                  fill={isActive ? '#ffffff' : '#64748b'}
+                  fill={isActive ? '#ffffff' : '#52525b'}
                   className="tick-text"
                 >
                   {tick.label}
@@ -205,28 +215,17 @@ export default function Speedometer({
             );
           })}
 
-          {/* Center Hub Outer Ring */}
-          <circle
-            cx={cx}
-            cy={cy}
-            r="38"
-            fill="none"
-            stroke="#ff5a00"
-            strokeWidth="1"
-            strokeOpacity="0.2"
-          />
-
-          {/* Dynamic Needle with smooth interpolation */}
+          {/* Dynamic Needle */}
           <g transform={`rotate(${smoothAngle}, ${cx}, ${cy})`} className="needle-group">
             <line
               x1={cx}
               y1={cy}
               x2={cx}
               y2={cy - radius + 16}
-              stroke="#ff5a00"
+              stroke={phaseColor}
               strokeWidth="3.5"
               strokeLinecap="round"
-              filter="url(#speedo-glow)"
+              filter="url(#gauge-glow)"
             />
             <circle
               cx={cx}
@@ -240,70 +239,78 @@ export default function Speedometer({
           <circle
             cx={cx}
             cy={cy}
-            r="26"
-            fill="url(#hub-grad)"
-            stroke="#26344d"
+            r="24"
+            fill="#09090b"
+            stroke="#27272a"
             strokeWidth="2"
           />
           <circle
             cx={cx}
             cy={cy}
-            r="9"
-            fill="#ff5a00"
-            filter="url(#speedo-glow)"
+            r="8"
+            fill={phaseColor}
+            filter="url(#gauge-glow)"
           />
         </svg>
 
         {/* Digital Readout */}
         <div className="digital-display">
           <div className="digital-speed">
-            <span className="speed-number">{formatSpeed(smoothSpeed)}</span>
+            <span className="speed-number" style={{ color: '#ffffff' }}>
+              {formatSpeed(smoothSpeed)}
+            </span>
             <span className="speed-unit">Mbps</span>
           </div>
           <div className={`status-pill ${status}`}>
-            <span className="status-badge-dot"></span>
+            <span
+              className="status-badge-dot"
+              style={{ backgroundColor: phaseColor, boxShadow: `0 0 8px ${phaseColor}` }}
+            ></span>
             <span className="status-badge-text">{getStatusText()}</span>
           </div>
         </div>
 
-        {/* Progress Bar */}
+        {/* Minimal Progress Bar */}
         {isRunning && (
           <div className="phase-progress-bar">
             <div
               className="phase-progress-fill"
-              style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+              style={{
+                width: `${Math.min(100, Math.max(0, progress))}%`,
+                backgroundColor: phaseColor,
+                boxShadow: `0 0 10px ${phaseColor}`,
+              }}
             ></div>
           </div>
         )}
       </div>
 
-      {/* Main Single Action Button */}
+      {/* Clean, Simple High-Contrast Action Button */}
       <div className="speedo-actions">
         {!isRunning ? (
           <button
-            className="action-btn start-btn"
+            className="action-btn start-btn-minimal"
             onClick={onStart}
             disabled={status === 'ping'}
             aria-label="Start speed test"
           >
-            <div className="btn-glow"></div>
             <div className="btn-content">
               {status === 'completed' ? (
                 <>
-                  <RefreshCw size={20} className="btn-icon" />
-                  <span>START NEW TEST</span>
+                  <RefreshCw size={18} />
+                  <span>TEST AGAIN</span>
                 </>
               ) : (
                 <>
-                  <Play size={20} className="btn-icon fill-current" />
-                  <span>START TEST</span>
+                  <Play size={18} fill="#000000" />
+                  <span>START SPEED TEST</span>
                 </>
               )}
             </div>
           </button>
         ) : (
-          <button className="action-btn stop-btn" onClick={onStop} aria-label="Stop speed test">
-            <Square size={18} className="btn-icon fill-current" />
+          <button className="action-btn stop-btn-minimal" onClick={onStop} aria-label="Stop speed test">
+            <Square size={16} fill="currentColor" />
             <span>STOP</span>
           </button>
         )}

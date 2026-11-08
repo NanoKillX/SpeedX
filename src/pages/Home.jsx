@@ -18,13 +18,13 @@ export default function Home({
 }) {
   return (
     <div className="home-page">
-      {/* Hero Heading */}
+      {/* Hero Section - Clean, Minimalist Black & White */}
       <section className="hero-section">
         <h1 className="hero-title">
-          INTERNET SPEED <span className="hero-highlight">BENCHMARK</span>
+          INTERNET SPEED <span className="hero-highlight-white">BENCHMARK</span>
         </h1>
         <p className="hero-subtitle">
-          Real-time, zero-simulation edge bandwidth & latency testing. Powered by Cloudflare Anycast.
+          Real-time, zero-simulation edge bandwidth & latency measurement powered by Cloudflare Anycast.
         </p>
       </section>
 
@@ -52,7 +52,7 @@ export default function Home({
         <MetricCards metrics={metrics} status={status} />
       </section>
 
-      {/* When completed, show the Result Summary Card */}
+      {/* When completed, show Result Summary Card */}
       {status === 'completed' && (
         <section className="results-section">
           <ResultModal

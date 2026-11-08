@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Zap, Globe, Heart } from 'lucide-react';
+import { Zap } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -8,12 +8,12 @@ export default function Footer() {
         <div className="footer-top">
           <div className="footer-brand">
             <div className="footer-logo">
-              <Zap size={20} className="footer-bolt" />
-              <span className="footer-brand-name">NHubX <span className="text-orange">SpeedX</span></span>
+              <Zap size={18} className="footer-bolt" />
+              <span className="footer-brand-name">NHubX <span className="text-white">SpeedX</span></span>
             </div>
             <p className="footer-tagline">One Hub. Infinite Power.</p>
             <p className="footer-desc">
-              Next-generation network benchmarking engineered on Cloudflare's global edge network.
+              High-precision, edge-powered internet performance diagnostic platform.
             </p>
           </div>
 
@@ -22,20 +22,20 @@ export default function Footer() {
               <h4 className="col-title">PRODUCT</h4>
               <a href="#speedtest" className="footer-link">Speed Test</a>
               <a href="#methodology" className="footer-link">Methodology</a>
-              <a href="#network" className="footer-link">Edge Locations</a>
+              <a href="#network" className="footer-link">Edge PoPs</a>
             </div>
             <div className="footer-col">
               <h4 className="col-title">INFRASTRUCTURE</h4>
               <span className="footer-static-item">Cloudflare Workers</span>
-              <span className="footer-static-item">Cloudflare R2 Storage</span>
+              <span className="footer-static-item">Cloudflare R2</span>
               <span className="footer-static-item">Cloudflare D1 SQL</span>
               <span className="footer-static-item">Cloudflare Pages</span>
             </div>
             <div className="footer-col">
-              <h4 className="col-title">LEGAL & PRIVACY</h4>
-              <span className="footer-static-item">No Personal Data Logging</span>
+              <h4 className="col-title">PRIVACY</h4>
+              <span className="footer-static-item">Zero Packet Inspection</span>
               <span className="footer-static-item">Anonymous Telemetry</span>
-              <span className="footer-static-item">Terms of Service</span>
+              <span className="footer-static-item">GDPR Compliant</span>
             </div>
           </div>
         </div>
@@ -45,7 +45,7 @@ export default function Footer() {
             © {new Date().getFullYear()} NHubX. All rights reserved.
           </div>
           <div className="footer-badge">
-            <span className="version-pill">v1.0.0 Production</span>
+            <span className="version-pill">v1.1.0 Production</span>
           </div>
         </div>
       </div>

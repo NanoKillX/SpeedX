@@ -1,12 +1,12 @@
 import React from 'react';
-import { Zap, ShieldCheck, Cpu, Network, Layers, BarChart3, Database } from 'lucide-react';
+import { Zap, ShieldCheck, Cpu, Network, Layers, BarChart3 } from 'lucide-react';
 
 export default function AboutPage() {
   return (
     <div className="about-page">
       <div className="about-hero">
         <h1 className="page-title">
-          ABOUT <span className="hero-highlight">NHubX SPEEDX</span>
+          ABOUT <span className="hero-highlight-white">NHubX SPEEDX</span>
         </h1>
         <p className="page-subtitle">
           Next-generation network diagnostic platform engineered for raw precision and real transfer speeds.
@@ -14,10 +14,9 @@ export default function AboutPage() {
       </div>
 
       <div className="about-cards-grid">
-        {/* Core Philosophy */}
         <div className="about-card">
-          <div className="about-card-icon text-orange">
-            <Zap size={24} />
+          <div className="about-card-icon text-cyan">
+            <Zap size={22} />
           </div>
           <h3 className="about-card-title">Real Network Transfer</h3>
           <p className="about-card-text">
@@ -25,21 +24,19 @@ export default function AboutPage() {
           </p>
         </div>
 
-        {/* Incompressible Data */}
         <div className="about-card">
-          <div className="about-card-icon text-cyan">
-            <Cpu size={24} />
+          <div className="about-card-icon text-purple">
+            <Cpu size={22} />
           </div>
           <h3 className="about-card-title">Incompressible Payloads</h3>
           <p className="about-card-text">
-            Standard web speedtests often transmit compressible zeros or repeated text, which intermediate proxies and browsers compress via gzip or Brotli, reporting artificially inflated gigabit numbers. SpeedX streams high-entropy cryptographic binary payloads that cannot be compressed.
+            Standard web speedtests often transmit compressible zeros or repeated text, which intermediate proxies and browsers compress via gzip or Brotli, reporting artificially inflated numbers. SpeedX streams high-entropy cryptographic binary payloads.
           </p>
         </div>
 
-        {/* Parallel Sockets */}
         <div className="about-card">
-          <div className="about-card-icon text-yellow">
-            <Network size={24} />
+          <div className="about-card-icon text-green">
+            <Network size={22} />
           </div>
           <h3 className="about-card-title">Multi-Stream Architecture</h3>
           <p className="about-card-text">
@@ -47,21 +44,19 @@ export default function AboutPage() {
           </p>
         </div>
 
-        {/* RFC 3550 Jitter */}
         <div className="about-card">
-          <div className="about-card-icon text-purple">
-            <BarChart3 size={24} />
+          <div className="about-card-icon text-amber">
+            <BarChart3 size={22} />
           </div>
           <h3 className="about-card-title">RFC 3550 Latency & Jitter</h3>
           <p className="about-card-text">
-            Latency variation (jitter) is calculated using the official RFC 3550 telecommunications formula, measuring the mean absolute difference between successive round-trip times to evaluate voice/gaming packet reliability.
+            Latency variation (jitter) is calculated using the official RFC 3550 telecommunications formula, measuring the mean absolute difference between successive round-trip times to evaluate voice and gaming packet reliability.
           </p>
         </div>
 
-        {/* Cloudflare Edge */}
         <div className="about-card">
-          <div className="about-card-icon text-green">
-            <Layers size={24} />
+          <div className="about-card-icon text-white">
+            <Layers size={22} />
           </div>
           <h3 className="about-card-title">Cloudflare Edge Anycast</h3>
           <p className="about-card-text">
@@ -69,10 +64,9 @@ export default function AboutPage() {
           </p>
         </div>
 
-        {/* Privacy */}
         <div className="about-card">
-          <div className="about-card-icon text-orange">
-            <ShieldCheck size={24} />
+          <div className="about-card-icon text-cyan">
+            <ShieldCheck size={22} />
           </div>
           <h3 className="about-card-title">Zero Tracking Privacy</h3>
           <p className="about-card-text">
@@ -81,17 +75,15 @@ export default function AboutPage() {
         </div>
       </div>
 
-      {/* Tech Stack Banner */}
       <div className="tech-stack-card">
-        <h3 className="stack-title">ENGINEERED ON MODERN EDGE INFRASTRUCTURE</h3>
+        <h3 className="stack-title">EDGE INFRASTRUCTURE STACK</h3>
         <div className="stack-tags">
           <span className="stack-badge">Cloudflare Workers</span>
-          <span className="stack-badge">Cloudflare R2 Object Storage</span>
+          <span className="stack-badge">Cloudflare R2 Storage</span>
           <span className="stack-badge">Cloudflare D1 SQL</span>
           <span className="stack-badge">Cloudflare Pages</span>
           <span className="stack-badge">React 19 + Vite</span>
-          <span className="stack-badge">Web Streams API</span>
-          <span className="stack-badge">High-Precision performance.now()</span>
+          <span className="stack-badge">RFC 3550 Standard</span>
         </div>
       </div>
     </div>

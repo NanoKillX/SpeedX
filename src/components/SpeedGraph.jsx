@@ -26,7 +26,6 @@ function CustomTooltip({ active, payload, label }) {
 }
 
 export default function SpeedGraph({ data = [] }) {
-  // If no data points yet, create a baseline
   const chartData = data.length > 0 ? data : [
     { time: '0.0', download: 0, upload: 0 },
   ];
@@ -35,8 +34,8 @@ export default function SpeedGraph({ data = [] }) {
     <div className="speed-graph-card">
       <div className="graph-header">
         <div className="graph-title-group">
-          <h3 className="graph-title">REAL-TIME BANDWIDTH PROFILE</h3>
-          <span className="graph-subtitle">Continuous measurement stream</span>
+          <h3 className="graph-title">LIVE BANDWIDTH TRAJECTORY</h3>
+          <span className="graph-subtitle">Continuous socket stream rate</span>
         </div>
         <div className="graph-legend">
           <div className="legend-item">
@@ -51,28 +50,28 @@ export default function SpeedGraph({ data = [] }) {
       </div>
 
       <div className="graph-canvas-wrap">
-        <ResponsiveContainer width="100%" height={180}>
+        <ResponsiveContainer width="100%" height={170}>
           <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="downloadGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#ff5a00" stopOpacity={0.6} />
-                <stop offset="95%" stopColor="#ff5a00" stopOpacity={0.0} />
+                <stop offset="5%" stopColor="#00f0ff" stopOpacity={0.4} />
+                <stop offset="95%" stopColor="#00f0ff" stopOpacity={0.0} />
               </linearGradient>
               <linearGradient id="uploadGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#00d2ff" stopOpacity={0.6} />
-                <stop offset="95%" stopColor="#00d2ff" stopOpacity={0.0} />
+                <stop offset="5%" stopColor="#b026ff" stopOpacity={0.4} />
+                <stop offset="95%" stopColor="#b026ff" stopOpacity={0.0} />
               </linearGradient>
             </defs>
             <XAxis
               dataKey="time"
-              stroke="#334155"
-              tick={{ fill: '#64748b', fontSize: 11 }}
+              stroke="#27272a"
+              tick={{ fill: '#71717a', fontSize: 11 }}
               tickLine={false}
               unit="s"
             />
             <YAxis
-              stroke="#334155"
-              tick={{ fill: '#64748b', fontSize: 11 }}
+              stroke="#27272a"
+              tick={{ fill: '#71717a', fontSize: 11 }}
               tickLine={false}
               unit="M"
             />
@@ -81,8 +80,8 @@ export default function SpeedGraph({ data = [] }) {
               type="monotone"
               dataKey="download"
               name="Download"
-              stroke="#ff5a00"
-              strokeWidth={2.5}
+              stroke="#00f0ff"
+              strokeWidth={2}
               fillOpacity={1}
               fill="url(#downloadGrad)"
               isAnimationActive={false}
@@ -91,8 +90,8 @@ export default function SpeedGraph({ data = [] }) {
               type="monotone"
               dataKey="upload"
               name="Upload"
-              stroke="#00d2ff"
-              strokeWidth={2.5}
+              stroke="#b026ff"
+              strokeWidth={2}
               fillOpacity={1}
               fill="url(#uploadGrad)"
               isAnimationActive={false}
